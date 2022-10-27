@@ -1,45 +1,43 @@
 import * as React from "react";
-import { ChakraProvider, Box, VStack, Grid, theme, GridItem } from "@chakra-ui/react";
-import { ColorModeSwitcher } from "./ColorModeSwitcher";
+import { ChakraProvider, Box, Grid, theme, GridItem } from "@chakra-ui/react";
 import { SearchResults } from "./Components/SearchResults/SearchResults";
 import { Header } from "./Components/Header/Header";
+import { Hotel } from "./Types/Hotel";
 
-export const App = () => (
-  <ChakraProvider theme={theme}>
-    <Box textAlign="center" fontSize="xl">
-      {/* <Grid minH="100vh">
-        <GridItem w="100%" h="1" backgroundColor="blue">
-          <ColorModeSwitcher justifySelf="flex-end" />
-        </GridItem>
-        <GridItem w="100%" h="3" backgroundColor="yellow">
-          <VStack spacing={8}>
-            <Header />
-            <SearchResults />
-          </VStack>
-        </GridItem>
-      </Grid> */}
-      <Grid
-        templateAreas={`"header"
+export const App = () => {
+  const [searchResults, setSearchResults] = React.useState<Hotel[]>([]);
+
+  React.useEffect(() => {
+    fetch("https://obmng.dbm.guestline.net/api/hotels?collection-id=OBMNG")
+      .then((response) => response.json())
+      .then((data) => setSearchResults(data));
+  }, []);
+
+  console.log("search results", searchResults);
+
+  return (
+    <ChakraProvider theme={theme}>
+      <Box textAlign="center" fontSize="xl">
+        <Grid
+          templateAreas={`"header"
                   "main"
                   "footer"`}
-        gridTemplateRows={"150px 1fr 30px"}
-        gridTemplateColumns={"1fr"}
-        // h="200px"
-        minH="100vh"
-        gap="1"
-        color="blackAlpha.700"
-        fontWeight="bold"
-      >
-        <GridItem pl="2" bg="orange.300" area={"header"}>
-          Header
-        </GridItem>
-        <GridItem pl="2" bg="green.300" area={"main"}>
-          Main
-        </GridItem>
-        <GridItem pl="2" bg="blue.300" area={"footer"}>
-          &copy; 2022 by Arkadiusz Kałkus
-        </GridItem>
-      </Grid>
-    </Box>
-  </ChakraProvider>
-);
+          gridTemplateRows={"150px 1fr 30px"}
+          gridTemplateColumns={"1fr"}
+          minH="100vh"
+          gap="1"
+          color="blackAlpha.700"
+          fontWeight="bold"
+        >
+          <GridItem area={"header"}>
+            <Header />
+          </GridItem>
+          <GridItem area={"main"}>
+            <SearchResults hotels={searchResults} />
+          </GridItem>
+          {/* <GridItem area={"footer"}>&copy; 2022 by Arkadiusz Kałkus</GridItem> */}
+        </Grid>
+      </Box>
+    </ChakraProvider>
+  );
+};
