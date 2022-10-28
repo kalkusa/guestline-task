@@ -3,14 +3,25 @@ import { ChakraProvider, Box, Grid, theme, GridItem } from "@chakra-ui/react";
 import { SearchResults } from "./Components/SearchResults/SearchResults";
 import { Header } from "./Components/Header/Header";
 import { Hotel } from "./Types/Hotel";
+import { useEffect } from "react";
+import { Room } from "./Types/Room";
+import { RatePlan } from "./Types/RatePlan";
+
+type SearchResults = Map<string, { hotel: Hotel; rooms: Room[]; ratePlans: RatePlan[] }>;
 
 export const App = () => {
-  const [searchResults, setSearchResults] = React.useState<Hotel[]>([]);
+  const [searchResults, setSearchResults] = React.useState<SearchResults>(new Map());
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("https://obmng.dbm.guestline.net/api/hotels?collection-id=OBMNG")
       .then((response) => response.json())
-      .then((data) => setSearchResults(data));
+      .then((data) => {
+        let result = new Map();
+        data.forEach((hotel: Hotel) => {
+          result.set(hotel.id, { hotel: hotel, rooms: [], ratePlans: [] });
+        });
+        setSearchResults(result);
+      });
   }, []);
 
   console.log("search results", searchResults);
@@ -32,9 +43,7 @@ export const App = () => {
           <GridItem area={"header"}>
             <Header />
           </GridItem>
-          <GridItem area={"main"}>
-            <SearchResults hotels={searchResults} />
-          </GridItem>
+          <GridItem area={"main"}>{/* <SearchResults hotels={searchResults} /> */}</GridItem>
           {/* <GridItem area={"footer"}>&copy; 2022 by Arkadiusz Kałkus</GridItem> */}
         </Grid>
       </Box>
