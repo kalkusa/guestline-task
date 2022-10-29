@@ -1,16 +1,15 @@
 import { Box } from "@chakra-ui/react";
-import { Hotel } from "../../../Types/Hotel";
+import { SearchResult } from "../../../Types/SearchResult";
 import { HotelImageRatingAndDescription } from "./HotelImageRatingAndDescription/HotelImageRatingAndDescription";
 
 interface SearchResultItemProps {
-  hotel: Hotel;
+  searchResult: SearchResult;
 }
 
-export const SearchResultItem = ({ hotel }: SearchResultItemProps) => {
-  console.log("hotel: %o", hotel);
+export const SearchResultItem = ({ searchResult }: SearchResultItemProps) => {
   return (
     <Box w="3xl" borderWidth="1px" borderRadius="lg" p={5} id="searchResultItem">
-      <HotelImageRatingAndDescription hotel={hotel} />
+      <HotelImageRatingAndDescription hotel={searchResult.hotel} />
     </Box>
   );
 };

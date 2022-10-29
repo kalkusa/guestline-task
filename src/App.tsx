@@ -4,27 +4,31 @@ import { SearchResults } from "./Components/SearchResults/SearchResults";
 import { Header } from "./Components/Header/Header";
 import { Hotel } from "./Types/Hotel";
 import { useEffect } from "react";
-import { Room } from "./Types/Room";
-import { RatePlan } from "./Types/RatePlan";
-
-type SearchResults = Map<string, { hotel: Hotel; rooms: Room[]; ratePlans: RatePlan[] }>;
+import { SearchResults as SearchResultsType } from "./Types/SearchResults";
 
 export const App = () => {
-  const [searchResults, setSearchResults] = React.useState<SearchResults>(new Map());
+  const [searchResults, setSearchResults] = React.useState<SearchResultsType>(new Map());
 
   useEffect(() => {
-    fetch("https://obmng.dbm.guestline.net/api/hotels?collection-id=OBMNG")
-      .then((response) => response.json())
-      .then((data) => {
-        let result = new Map();
-        data.forEach((hotel: Hotel) => {
-          result.set(hotel.id, { hotel: hotel, rooms: [], ratePlans: [] });
-        });
-        setSearchResults(result);
-      });
-  }, []);
+    const fetchData = async () => {
+      const hotelListResponse = await fetch("https://obmng.dbm.guestline.net/api/hotels?collection-id=OBMNG");
+      const hotelList = await hotelListResponse.json();
+      let result = new Map();
+      await Promise.all([
+        (async () => {
+          for (const hotel of hotelList) {
+            const hotelRoomsResponse = fetch(`https://obmng.dbm.guestline.net/api/roomRates/OBMNG/${hotel.id}`);
+            const hotelRooms = await (await hotelRoomsResponse).json();
+            result.set(hotel.id, { hotel: hotel, rooms: hotelRooms?.rooms, ratePlans: hotelRooms?.ratePlans });
+          }
+        })(),
+      ]);
 
-  console.log("search results", searchResults);
+      setSearchResults(result);
+    };
+
+    fetchData().catch(console.error);
+  }, []);
 
   return (
     <ChakraProvider theme={theme}>
@@ -43,7 +47,7 @@ export const App = () => {
           <GridItem area={"header"}>
             <Header />
           </GridItem>
-          <GridItem area={"main"}>{/* <SearchResults hotels={searchResults} /> */}</GridItem>
+          <GridItem area={"main"}>{<SearchResults searchResults={searchResults} />}</GridItem>
           {/* <GridItem area={"footer"}>&copy; 2022 by Arkadiusz Kałkus</GridItem> */}
         </Grid>
       </Box>
